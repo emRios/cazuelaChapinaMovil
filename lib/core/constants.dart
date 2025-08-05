@@ -14,16 +14,16 @@ String getBaseUrl() {
 
   // 🌐 Flutter Web (por si alguna vez migras a web)
   if (kIsWeb) {
-    return 'http://localhost:9000/';
+    return 'http://localhost:9000';
   }
 
   // 📱 Emulador Android
   if (Platform.isAndroid) {
-    return 'http://10.0.2.2:9000/';
+    return 'http://10.0.2.2:9000';
   }
 
   // 📲 Dispositivo físico u otro sistema (ej: iOS, desktop)
-  return 'http://$localHostIP:9000/';
+  return 'http://$localHostIP:9000';
 }
 
 

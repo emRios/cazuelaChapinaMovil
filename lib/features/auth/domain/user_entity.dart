@@ -11,5 +11,7 @@ class UserEntity {
     required this.modulos,
     required this.token,
     required this.password,
+    required nombre,
+    required id,
   });
 }

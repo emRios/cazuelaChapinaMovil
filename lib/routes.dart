@@ -4,7 +4,7 @@ import 'features/auth/presentation/pages/login_screen.dart';
 import 'features/home/pages/home_screen.dart';
 
 Map<String, WidgetBuilder> appRoutes(UserEntity user) => {
-      '/login': (context) => const LoginScreen(),
+      // '/login': (context) => const LoginScreen(),
       '/home': (context) => HomeScreen(user: user),
       // agrega más rutas reales conforme crees pantallas
       '/inventario': (context) => const Placeholder(),

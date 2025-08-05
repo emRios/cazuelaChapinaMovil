@@ -7,6 +7,8 @@ class UserModel extends UserEntity {
     required super.modulos,
     required super.token,
     required super.password,
+    required super.nombre,
+    required super.id,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
@@ -14,6 +16,7 @@ class UserModel extends UserEntity {
         rol: json['rol'],
         modulos: List<String>.from(json['modulos']),
         token: json['token'],
-        password: json['password'] ?? '', // útil en simulaciones
+        password: json['password'] ?? '', id: null,
+        nombre: null, // útil en simulaciones
       );
 }

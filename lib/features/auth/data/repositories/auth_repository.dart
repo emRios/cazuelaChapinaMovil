@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants.dart';
 import '../../../../core/services/preferences_service.dart';
 import '../../domain/i_auth_repository.dart';
+import '../../domain/user_entity.dart';
 import '../models/user_model.dart';
 
 class AuthRepository implements IAuthRepository {
@@ -14,7 +18,7 @@ class AuthRepository implements IAuthRepository {
   @override
   Future<UserModel?> login(String email, String password) async {
     try {
-      final url = '${getBaseUrl()}login';
+      final url = '${getBaseUrl()}/login';
 
       final response = await dio.post(
         url,
@@ -52,79 +56,35 @@ class AuthRepository implements IAuthRepository {
   Future<String?> getToken() async {
     return prefsService.getString('token');
   }
+
+  @override
+  Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+  }
+
+  @override
+  Future<void> clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+  }
+
+  @override
+  UserEntity getUserFromToken(String token) {
+    final parts = token.split('.');
+    if (parts.length != 3) throw Exception('Token inválido');
+    final payload =
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+    final data = jsonDecode(payload);
+
+    return UserEntity(
+      id: data['sub'] ?? '',
+      nombre: data['nombre'] ?? '',
+      modulos: List<String>.from(data['modulos'] ?? []),
+      token: token,
+      email: '',
+      password: '',
+      rol: '',
+    );
+  }
 }
-
-
-// import '/core/services/preferences_service.dart'; // Ajusta la ruta
-// import '../../domain/i_auth_repository.dart';
-// import '../models/user_model.dart';
-
-// class AuthRepository implements IAuthRepository {
-//   final PreferencesService prefsService;
-
-//   AuthRepository(this.prefsService);
-
-//   @override
-//   Future<UserModel?> login(String email, String password) async {
-//     // Simulación de llamada al backend
-//     await Future.delayed(const Duration(seconds: 1));
-
-//     if (email == 'test@correo.com' && password == '1234') {
-//       final userData = {
-//         'email': email,
-//         'rol': 'admin',
-//         'modulos': ['dashboard', 'inventario'],
-//         'token': 'abc123token',
-//         'password': password,
-//       };
-
-//       final user = UserModel.fromJson(userData);
-
-//       await prefsService.setString('token', user.token);
-//       await prefsService.setString('email', user.email);
-//       await prefsService.setString('rol', user.rol);
-//       await prefsService.setString('modulos', user.modulos.join(','));
-
-//       return user;
-//     } else {
-//       return null;
-//     }
-//   }
-
-//   @override
-//   Future<String?> getToken() async {
-//     return prefsService.getString('token');
-//   }
-// }
-
-
-
-// import '../models/user_model.dart';
-// import 'package:dio/dio.dart';
-
-// abstract class IAuthRepository {
-//   Future<UserModel> login(String email, String password);
-// }
-
-// class AuthRepository implements IAuthRepository {
-//   final Dio dio;
-
-//   AuthRepository(this.dio);
-
-//   @override
-//   Future<UserModel> login(String email, String password) async {
-//     final response = await dio.post('http://localhost:9000/login', data: {
-//       'email': email,
-//       'password': password,
-//     });
-
-//     if (response.statusCode == 200) {
-//       return UserModel.fromJson({
-//         ...response.data,
-//         'password': password, // añadimos localmente
-//       });
-//     } else {
-//       throw Exception('Login failed');
-//     }
-//   }
-// }

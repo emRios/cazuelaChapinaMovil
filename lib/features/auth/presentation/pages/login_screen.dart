@@ -1,83 +1,90 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../home/pages/home_screen.dart';
+import '../../domain/i_auth_repository.dart';
 import '../bloc/login_bloc.dart';
+import '../../../home/pages/home_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
+class LoginScreen extends StatelessWidget {
+  final IAuthRepository authRepository;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  LoginScreen({Key? key, required this.authRepository}) : super(key: key);
 
-  void _onLoginButtonPressed() {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+  void _onLoginButtonPressed(BuildContext context) {
+    final email = _emailController.text;
+    final password = _passwordController.text;
 
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor ingresa email y contraseña')),
-      );
-      return;
-    }
-
-    context.read<LoginBloc>().add(LoginRequested(email, password));
+    context.read<LoginBloc>().add(
+          LoginRequested(email: email, password: password),
+        );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: BlocListener<LoginBloc, LoginState>(
-        listener: (context, state) {
-          if (state is LoginFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error)),
-            );
-          } else if (state is LoginSuccess) {
-            // Navega a HomeScreen pasando el usuario autenticado
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => HomeScreen(user: state.user),
-              ),
-            );
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(labelText: 'Contraseña'),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 20),
-                  BlocBuilder<LoginBloc, LoginState>(
-                    builder: (context, state) {
-                      if (state is LoginLoading) {
-                        return const CircularProgressIndicator();
-                      }
-
-                      return ElevatedButton(
-                        onPressed: _onLoginButtonPressed,
-                        child: const Text('Iniciar sesión'),
-                      );
-                    },
-                  ),
-                ],
+    return BlocProvider<LoginBloc>(
+      create: (_) => LoginBloc(authRepository: authRepository),
+      child: Scaffold(
+        body: BlocListener<LoginBloc, LoginState>(
+          listener: (context, state) {
+            if (state is LoginFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.error)),
+              );
+            } else if (state is LoginSuccess) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HomeScreen(user: state.user),
+                ),
+              );
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Iniciar Sesión',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    TextField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(labelText: 'Email'),
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _passwordController,
+                      decoration:
+                          const InputDecoration(labelText: 'Contraseña'),
+                      obscureText: true,
+                    ),
+                    const SizedBox(height: 20),
+                    BlocBuilder<LoginBloc, LoginState>(
+                      builder: (context, state) {
+                        if (state is LoginLoading) {
+                          return const CircularProgressIndicator();
+                        }
+                        return SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => _onLoginButtonPressed(context),
+                            child: const Text('Iniciar sesión'),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -85,14 +92,102 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
 }
+
+
+// import 'package:cazuela_movil/features/auth/domain/i_auth_repository.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
+// import '../../../home/pages/home_screen.dart';
+// import '../../data/repositories/auth_repository.dart';
+// import '../bloc/login_bloc.dart';
+
+// class LoginScreen extends StatelessWidget  {
+//   final IAuthRepository authRepository;
+//   // Controladores para los campos de texto
+//   final TextEditingController _emailController = TextEditingController();
+//   final TextEditingController _passwordController = TextEditingController();
+
+//   LoginScreen({Key? key, required this.authRepository}) : super(key: key);
+
+//   void _onLoginButtonPressed(BuildContext context) {
+//     final email = _emailController.text;
+//     final password = _passwordController.text;
+
+//     context.read<LoginBloc>().add(
+//       LoginRequested(email: email, password: password),
+//     );
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocProvider<LoginBloc>(
+//       create: (_) => LoginBloc(authRepository: authRepository),
+//       child: Scaffold(
+//         body: BlocListener<LoginBloc, LoginState>(
+//           listener: (context, state) {
+//             if (state is LoginFailure) {
+//               ScaffoldMessenger.of(context).showSnackBar(
+//                 SnackBar(content: Text(state.error)),
+//               );
+//             } else if (state is LoginSuccess) {
+//               Navigator.pushReplacement(
+//                 context,
+//                 MaterialPageRoute(
+//                   builder: (_) => HomeScreen(user: state.user),
+//                 ),
+//               );
+//             }
+//           },
+//           child: Padding(
+//             padding: const EdgeInsets.all(16),
+//             child: Center(
+//               child: SingleChildScrollView(
+//                 child: Column(
+//                   children: [
+//                     TextField(
+//                       controller: _emailController,
+//                       decoration: const InputDecoration(labelText: 'Email'),
+//                       keyboardType: TextInputType.emailAddress,
+//                     ),
+//                     const SizedBox(height: 12),
+//                     TextField(
+//                       controller: _passwordController,
+//                       decoration: const InputDecoration(labelText: 'Contraseña'),
+//                       obscureText: true,
+//                     ),
+//                     const SizedBox(height: 20),
+//                     BlocBuilder<LoginBloc, LoginState>(
+//                       builder: (context, state) {
+//                         if (state is LoginLoading) {
+//                           return const CircularProgressIndicator();
+//                         }
+//                         return ElevatedButton(
+//                           onPressed: () => _onLoginButtonPressed(context),
+//                           child: const Text('Iniciar sesión'),
+//                         );
+//                       },
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+
+
+  // @override
+  // void dispose() {
+  //   _emailController.dispose();
+  //   _passwordController.dispose();
+  //   super.dispose();
+  // }
+
 
 
 // import 'package:flutter/material.dart';

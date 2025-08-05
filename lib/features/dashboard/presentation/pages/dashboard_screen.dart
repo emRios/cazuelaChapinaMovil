@@ -1,8 +1,8 @@
+import 'package:cazuela_movil/features/auth/domain/user_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/dashboard_metricas_entity.dart';
 import '../bloc/dashboard_bloc.dart';
-import '../bloc/dashboard_event.dart';
 import '../bloc/dashboard_state.dart';
 
 class DashboardScreen extends StatelessWidget {
